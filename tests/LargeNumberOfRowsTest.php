@@ -3,6 +3,7 @@
 namespace bfinlay\SpreadsheetSeeder\Tests;
 
 use bfinlay\SpreadsheetSeeder\SpreadsheetSeederServiceProvider;
+use bfinlay\SpreadsheetSeeder\Tests\Seeds\FakeNames100kXlsxSeeder;
 use bfinlay\SpreadsheetSeeder\Tests\Seeds\FakeNamesCsvSeeder;
 use bfinlay\SpreadsheetSeeder\Tests\Seeds\FakeNamesXlsxSeeder;
 use Orchestra\Testbench\TestCase;
@@ -65,11 +66,7 @@ class LargeNumberOfRowsTest extends TestCase
     /**
      * @depends it_runs_the_migrations
      *
-     * Seed excel spreadsheet and verify that worksheet names match table names
-     *
-     * Seed classicmodels.xlsx and verify some data in each table
-     * Tables are created by the migrations.  In order to test the seed process the test has to verify that data was
-     * loaded from a sheet in the spreadsheet to the corresponding table.
+     * Seed csv file with 15k rows and verify that last entry is accurate
      *
      */
     public function test_15k_rows()
@@ -84,11 +81,7 @@ class LargeNumberOfRowsTest extends TestCase
     /**
      * @depends it_runs_the_migrations
      *
-     * Seed excel spreadsheet and verify that worksheet names match table names
-     *
-     * Seed classicmodels.xlsx and verify some data in each table
-     * Tables are created by the migrations.  In order to test the seed process the test has to verify that data was
-     * loaded from a sheet in the spreadsheet to the corresponding table.
+     * Seed excel file with 15k rows and verify that last entry is accurate
      *
      */
     public function test_15k_xlsx_rows()
@@ -99,4 +92,21 @@ class LargeNumberOfRowsTest extends TestCase
         $this->assertEquals('Culver', $fake->Surname);
         $this->assertEquals('Alicia', $fake->GivenName);
     }
+
+    /**
+     * @depends it_runs_the_migrations
+     *
+     * Seed excel file with 100k rows and verify that last entry is accurate
+     *
+     */
+    public function test_100k_xlsx_rows()
+    {
+        $this->seed(FakeNames100kXlsxSeeder::class);
+
+        $count = \DB::table('fake_names')->count();
+        $fake = \DB::table('fake_names')->where('id', '=', 100000)->first();
+        $this->assertEquals('Riedel', $fake->Surname);
+        $this->assertEquals('Robert', $fake->GivenName);
+    }
+
 }
