@@ -67,6 +67,8 @@ class SourceFile implements \Iterator
             if ($this->fileType == "Csv" && !empty($this->settings->delimiter)) {
                 $this->reader->setDelimiter($this->settings->delimiter);
             }
+            $chunkFilter = new SourceChunkReadFilter();
+            $this->reader->setReadFilter($chunkFilter);
             $this->workbook = $this->reader->load($filename);
         }
         return $this->workbook->getWorksheetIterator();

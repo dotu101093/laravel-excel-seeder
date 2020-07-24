@@ -66,6 +66,10 @@ class SourceHeader
         }
     }
 
+    /**
+     * The mapping header replaces a spreadsheet header
+     * so if a spreadsheet header exists and if it contains skipper strings in the columns the skipper strings will not be evaluated.
+     */
     private function makeMappingHeader() {
             $this->headerRow = $this->settings->mapping;
             foreach($this->headerRow as $key => $value) {

@@ -332,6 +332,31 @@ class SpreadsheetSeederSettings
     */
     public $textOutputFileExtension = "md";
 
+    private $sheet = [];
+    private $isSheetSettings = false;
+
+    public function __clone()
+    {
+        $this->isSheetSettings = true;
+
+    }
+
+    public function sheet($name)
+    {
+        // if this method is called on a child sheet settings instance then return null
+        if ($this->isSheetSettings) return null;
+
+        if (!isset($this->sheet[$name])) {
+            $sheetSettings = clone $this;
+            $sheetSettings->setSheetSettings(true);
+            $this->sheet[$name] = $sheetSettings;
+        }
+
+        return $this->sheet[$name];
+    }
+
+
+
     private static $instance = null;
 
     public static function getInstance()

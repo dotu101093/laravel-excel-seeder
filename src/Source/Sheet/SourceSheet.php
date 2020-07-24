@@ -99,6 +99,10 @@ class SourceSheet implements \Iterator
         return $this->fileType == "Csv";
     }
 
+    public function toArray() {
+
+    }
+
     /**
      * @inheritDoc
      */
