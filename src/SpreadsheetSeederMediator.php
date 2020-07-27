@@ -87,9 +87,11 @@ class SpreadsheetSeederMediator
     {
         foreach ($this->sourceFile as $this->sourceSheet) {
             $this->checkTable();
-            $this->processRows();
-            $this->insertRows();
-            $this->writeTextOutputTable();
+            foreach ($this->sourceSheet as $this->sourceChunk) {
+                $this->processRows();
+                $this->insertRows();
+                $this->writeTextOutputTable();
+            }
             $this->outputResults();
         }
     }
@@ -121,7 +123,7 @@ class SpreadsheetSeederMediator
      */
     private function processRows()
     {
-        foreach ($this->sourceSheet as $row) {
+        foreach ($this->sourceChunk as $row) {
             $this->total++;
 
             if (!$row->isValid()) continue;
