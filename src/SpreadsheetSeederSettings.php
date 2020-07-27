@@ -345,6 +345,19 @@ class SpreadsheetSeederSettings
     */
     public $batchInsertSize = 1000;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Read Chunk Size
+    |--------------------------------------------------------------------------
+    |
+    | Number of rows to read per chunk
+    |
+    |
+    | Default: 1000;
+    |
+    */
+    public $readChunkSize = 1000;
+
     private static $instance = null;
 
     public static function getInstance()

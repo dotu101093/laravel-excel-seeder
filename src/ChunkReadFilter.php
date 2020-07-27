@@ -16,8 +16,13 @@ use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
  */
 class ChunkReadFilter implements IReadFilter
 {
+    private $worksheetName = '';
     private $startRow = 0;
     private $endRow   = 0;
+
+    public function setWorksheet($worksheetName) {
+        $this->worksheetName = $worksheetName;
+    }
 
     /**  Set the list of rows that we want to read  */
     public function setRows($startRow, $chunkSize) {
@@ -27,7 +32,12 @@ class ChunkReadFilter implements IReadFilter
 
     public function readCell($column, $row, $worksheetName = '') {
         //  Only read the heading row, and the configured rows
-        if (($row == 1) || ($row >= $this->startRow && $row < $this->endRow)) {
+        if (
+            $row >= $this->startRow &&
+            $row < $this->endRow &&
+            ($worksheetName == $this->worksheetName ||
+             $worksheetName == '')
+            ) {
             return true;
         }
         return false;

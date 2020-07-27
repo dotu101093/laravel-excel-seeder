@@ -1,12 +1,12 @@
 <?php
 
 
-namespace bfinlay\SpreadsheetSeeder\Source\File;
+namespace bfinlay\SpreadsheetSeeder;
 
 
 use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
 
-class WorkbookReadFilter implements IReadFilter
+class SourceFileReadFilter implements IReadFilter
 {
     public function readCell($column, $row, $worksheetName = '') {
         //  Only read the heading row

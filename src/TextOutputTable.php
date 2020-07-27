@@ -27,6 +27,16 @@ class TextOutputTable
     private $rows;
 
     /**
+     * @var int
+     */
+    private $rowCount = 0;
+
+    /**
+     * @var boolean
+     */
+    private $isHeaderWritten = false;
+
+    /**
      * @var int[]
      */
     private $columnWidths;
@@ -102,21 +112,32 @@ class TextOutputTable
      * @param string[] $header
      * @param array $rows
      */
-    public function __construct(\SplFileObject $file, $tableName, $header, $rows)
+    public function __construct(\SplFileObject $file, $tableName, $header)
     {
         $this->file = $file;
         $this->tableName = $tableName;
         $this->header = $header;
-        $this->rows = $rows;
     }
     
-    public function write() {
+    public function writeHeader() {
+        if ($this->isHeaderWritten) return;
         if (! $this->file->isWritable()) throw new Exception('File ' . $this->file->getFilename() . ' is not open for writing.');
         
         $this->columnWidths();
         $this->writeTableName();
         $this->writeTableHeader();
+        $this->isHeaderWritten = true;
+    }
+
+    public function writeRows($rows) {
+        $this->rows = $rows;
+        $this->rowCount += count($rows);
+        $this->writeHeader();
         $this->writeTableRows();
+    }
+
+    public function writeFooter() {
+        $this->file->fwrite('(' . $this->rowCount . " rows)\n\n");
     }
 
     private function writeTableName() {
@@ -150,7 +171,6 @@ class TextOutputTable
             }
             $this->file->fwrite($this->rowOutsideRightColumnSeparator . "\n");
         }
-        $this->file->fwrite('(' . count($this->rows) . " rows)\n\n");
     }
 
     private function columnWidths() {
@@ -158,6 +178,7 @@ class TextOutputTable
             $this->columnWidths[$index] = max(strlen($columnName),1);
         }
 
+        if(is_null($this->rows)) return;
         foreach ($this->rows as $row) {
             foreach ($row as $index => $value) {
                 if (strlen($value) > $this->columnWidths[$index])

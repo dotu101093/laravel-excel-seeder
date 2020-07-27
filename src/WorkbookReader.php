@@ -4,7 +4,7 @@
 namespace bfinlay\SpreadsheetSeeder\Source\File;
 
 
-use bfinlay\SpreadsheetSeeder\Source\File\WorkbookReadFilter;
+use bfinlay\SpreadsheetSeeder\Source\File\SourceFileReadFilter;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Reader\BaseReader;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
@@ -71,7 +71,7 @@ class WorkbookReader implements \Iterator
             if ($this->fileType == "Csv" && !empty($this->settings->delimiter)) {
                 $this->reader->setDelimiter($this->settings->delimiter);
             }
-            $this->reader->setReadFilter(new WorkbookReadFilter());
+            $this->reader->setReadFilter(new SourceFileReadFilter());
             $this->workbook = $this->reader->load($filename);
         }
         $this->sheetNames = $this->workbook->getSheetNames();

@@ -136,6 +136,7 @@ class DestinationTable
 
             $offset += $this->settings->batchInsertSize;
         }
+        $this->rows = [];
     }
 
     public function defaultValue($column) {

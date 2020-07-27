@@ -26,6 +26,11 @@ class SpreadsheetSeederMediator
     private $sourceSheet;
 
     /**
+     * @var SourceChunk
+     */
+    private $sourceChunk;
+
+    /**
      * @var DestinationTable
      */
     private $seedTable;
@@ -51,6 +56,11 @@ class SpreadsheetSeederMediator
     private $textOutputFile;
 
     /**
+     * @var TextOutputTable
+     */
+    private $textOutputTable;
+
+    /**
      * @var int
      */
     private $resultCount = 0;
@@ -63,6 +73,21 @@ class SpreadsheetSeederMediator
         $this->settings = resolve(SpreadsheetSeederSettings::class);
     }
 
+    public static function getHumanReadableSize(int $sizeInBytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+        if ($sizeInBytes == 0) {
+            return '0 '.$units[1];
+        }
+
+        for ($i = 0; $sizeInBytes > 1024; $i++) {
+            $sizeInBytes /= 1024;
+        }
+
+        return round($sizeInBytes, 2).' '.$units[$i];
+    }
+
     /**
      * Run the class
      *
@@ -70,6 +95,7 @@ class SpreadsheetSeederMediator
      */
     public function run()
     {
+        error_log(__CLASS__ . '::' . __METHOD__ . '::' . __LINE__ .' ' . self::getHumanReadableSize(memory_get_usage()));
         $fileIterator = new FileIterator();
         if (!$fileIterator->count()) {
             $this->seeder->console('No spreadsheet file given', 'error');
@@ -85,14 +111,26 @@ class SpreadsheetSeederMediator
 
     public function seed()
     {
+        error_log(__CLASS__ . '::' . __METHOD__ . '::' . __LINE__ .' ' . self::getHumanReadableSize(memory_get_usage()));
         foreach ($this->sourceFile as $this->sourceSheet) {
+            error_log("sheet:" . $this->sourceSheet->getTitle());
+            error_log(__CLASS__ . '::' . __METHOD__ . '::' . __LINE__ .' ' . self::getHumanReadableSize(memory_get_usage()));
             $this->checkTable();
+            $this->createTextOutputTable();
             foreach ($this->sourceSheet as $this->sourceChunk) {
+                error_log("sheet:" . $this->sourceSheet->getTitle());
+                error_log("chunk: " . $this->sourceSheet->key());
+                error_log(__CLASS__ . '::' . __METHOD__ . '::' . __LINE__ .' ' . self::getHumanReadableSize(memory_get_usage()));
                 $this->processRows();
                 $this->insertRows();
-                $this->writeTextOutputTable();
+                $this->writeTextOutputTableRows();
+                unset($this->sourceChunk);
+                gc_collect_cycles();
             }
+            $this->writeTextOutputFooter();
             $this->outputResults();
+            unset($this->sourceSheet);
+            unset($this->seedTable);
         }
     }
 
@@ -153,22 +191,34 @@ class SpreadsheetSeederMediator
         $this->textOutputFile = new \SplFileObject($filename, 'w');
     }
 
-    private function writeTextOutputTable()
+    private function createTextOutputTable()
     {
-        if (!$this->settings->textOutput) {
-            return;
-        }
+        if (!$this->settings->textOutput) return;
 
-        $textOutputFile = $this->openTextOutputFile();
-        $table = new TextOutputTable(
+        $this->openTextOutputFile();
+        $this->textOutputTable = new TextOutputTable(
             $this->textOutputFile,
             $this->sourceSheet->getTableName(),
-            $this->sourceSheet->getHeader()->rawColumns(),
-            $this->rawRows
+            $this->sourceSheet->getHeader()->rawColumns()
         );
-        $table->write();
+    }
 
+    private function writeTextOutputTableRows()
+    {
+        if ($this->settings->textOutput) {
+            $this->textOutputTable->writeRows($this->rawRows);
+        }
         $this->rawRows = [];
+    }
+
+    private function writeTextOutputFooter()
+    {
+        if ($this->settings->textOutput) {
+            $this->textOutputTable->writeFooter();
+            $this->textOutputFile->fflush();
+            $this->textOutputFile = null;
+            unset($this->textOutputTable);
+        }
     }
 
     /**

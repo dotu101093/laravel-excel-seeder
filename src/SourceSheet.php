@@ -3,11 +3,45 @@
 
 namespace bfinlay\SpreadsheetSeeder;
 
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Reader\BaseReader;
+use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Row;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class SourceSheet implements \Iterator
 {
+    /**
+     * @var string
+     */
+    private $worksheetName;
+
+    /**
+     * @var string
+     */
+    private $fileName;
+
+    /**
+     * @var string
+     */
+    private $fileType;
+
+    /**
+     * @var BaseReader
+     */
+    private $reader;
+
+    /**
+     * @var ChunkReadFilter
+     */
+    private $readFilter;
+
+    /**
+     * @var Spreadsheet
+     */
+    private $workbook;
+
     /**
      * @var Worksheet
      */
@@ -24,19 +58,24 @@ class SourceSheet implements \Iterator
     private $tableName;
 
     /**
-     * @var string
+     * @var int
      */
-    private $fileType;
-
-    /**
-     * @var \Iterator
-     */
-    private $rowIterator;
+    private $rowOffset;
 
     /**
      * @var int
      */
-    private $rowOffset;
+    private $chunkStartRow;
+
+    /**
+     * @var int
+     */
+    private $chunkSize;
+
+    /**
+     * @var int
+     */
+    private $loadedChunk;
 
     /**
      * @var SourceHeader
@@ -46,22 +85,63 @@ class SourceSheet implements \Iterator
     /**
      * SourceSheet constructor.
      */
-    public function __construct(Worksheet $worksheet)
+    public function __construct($fileName, $fileType, $worksheetName)
     {
-        $this->worksheet = $worksheet;
+        $this->fileName = $fileName;
+        $this->fileType = $fileType;
+        $this->worksheetName = $worksheetName;
         $this->settings = resolve(SpreadsheetSeederSettings::class);
         $this->tableName = $this->settings->tablename;
-        $this->rowIterator = $this->worksheet->getRowIterator();
-        $this->rowOffset = $this->settings->offset;
-        if ($this->settings->header) $this->rowOffset++;
+        $this->rowOffset = $this->settings->offset + 1;
+
+        $this->createReadFilter();
+        $this->createReader();
+        $this->loadHeader();
+
         $this->header = $this->constructHeaderRow();
     }
 
+    private function createReadFilter() {
+        $this->readFilter = new ChunkReadFilter();
+        $this->chunkSize = $this->settings->readChunkSize;
+        $this->chunkStartRow = $this->rowOffset;
+        $this->readFilter->setWorksheet($this->worksheetName);
+    }
+
+    private function createReader() {
+        $this->reader = IOFactory::createReader($this->fileType);
+        if ($this->fileType == "Csv" && !empty($this->settings->delimiter)) {
+            $this->reader->setDelimiter($this->settings->delimiter);
+        }
+        $this->reader->setReadFilter($this->readFilter);
+    }
+
+    private function loadHeader() {
+        if (!$this->settings->header) return;
+
+        $this->loadChunk(1,1);
+        $this->rowOffset++;
+        $this->chunkStartRow = $this->rowOffset;
+    }
+
+    private function loadChunk($startRow = null, $chunkSize = null) {
+        if (is_null($startRow)) $startRow = $this->chunkStartRow;
+        if (is_null($chunkSize)) $chunkSize = $this->chunkSize;
+
+        if ($this->loadedChunk == $startRow) return;
+
+        unset($this->workbook);
+        unset($this->worksheet);
+        $this->readFilter->setRows($startRow, $chunkSize);
+        $this->workbook = $this->reader->load($this->fileName);
+        $this->worksheet = $this->workbook->setActiveSheetIndexByName($this->worksheetName);
+        $this->loadedChunk = $startRow;
+    }
+
     private function constructHeaderRow() {
-        if ($this->settings->header == false) return; // TODO adjust for mapping
-        $header = new SourceHeader($this->rowIterator->current(), $this->isCsv());
-        $this->next();
-        return $header;
+        if ($this->settings->header == false) return null; // TODO adjust for mapping
+
+        return new SourceHeader($this->worksheet->getRowIterator()->current(), $this->isCsv());
     }
 
     public function setTableName($tableName) {
@@ -72,6 +152,7 @@ class SourceSheet implements \Iterator
         $this->fileType = $fileType;
     }
 
+    //TODO filename?
     public function getTableName() {
         if (isset($this->tableName)) {
             return $this->tableName;
@@ -91,10 +172,6 @@ class SourceSheet implements \Iterator
         return $this->header;
     }
 
-    public function getRowIterator() {
-        return $this->rowIterator;
-    }
-
     public function isCsv() {
         return $this->fileType == "Csv";
     }
@@ -104,7 +181,8 @@ class SourceSheet implements \Iterator
      */
     public function current()
     {
-        return new SourceRow($this->rowIterator->current(), $this->header->toArray());
+        $this->loadChunk();
+        return new SourceChunk($this->worksheet, $this->header);
     }
 
     /**
@@ -112,11 +190,8 @@ class SourceSheet implements \Iterator
      */
     public function next()
     {
-        // this->key() is 1-based
-        if ($this->key() <= $this->rowOffset)
-            $this->rewind();
-        else
-            $this->rowIterator->next();
+        $this->chunkStartRow += $this->chunkSize;
+        $this->loadChunk();
     }
 
     /**
@@ -124,7 +199,7 @@ class SourceSheet implements \Iterator
      */
     public function key()
     {
-        return $this->rowIterator->key();
+        return $this->chunkStartRow;
     }
 
     /**
@@ -132,7 +207,8 @@ class SourceSheet implements \Iterator
      */
     public function valid()
     {
-        return $this->rowIterator->valid();
+        $this->loadChunk();
+        return $this->chunkStartRow <= $this->worksheet->getHighestDataRow();
     }
 
     /**
@@ -140,9 +216,8 @@ class SourceSheet implements \Iterator
      */
     public function rewind()
     {
-        $this->rowIterator->rewind();
-        // $this->key() is 1-based
-        while ($this->key() <= $this->rowOffset) $this->rowIterator->next();
+        $this->chunkStartRow = $this->rowOffset;
+        $this->loadChunk();
     }
 
     public function getTitle() {
