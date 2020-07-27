@@ -14,7 +14,7 @@ use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
  * Follows the example in the documentation at https://phpspreadsheet.readthedocs.io/en/latest/topics/reading-files/
  * (search for "chunk")
  */
-class SourceChunkReadFilter implements IReadFilter
+class ChunkReadFilter implements IReadFilter
 {
     private $startRow = 0;
     private $endRow   = 0;

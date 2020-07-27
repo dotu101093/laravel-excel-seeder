@@ -1,16 +1,17 @@
 <?php
 
 
-namespace bfinlay\SpreadsheetSeeder;
+namespace bfinlay\SpreadsheetSeeder\Source\File;
 
 
+use bfinlay\SpreadsheetSeeder\Source\File\WorkbookReadFilter;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Reader\BaseReader;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use SplFileInfo;
 
-class SourceFile implements \Iterator
+class WorkbookReader implements \Iterator
 {
     /**
      * @var SplFileInfo
@@ -33,18 +34,21 @@ class SourceFile implements \Iterator
     private $settings;
 
     /**
-     * @var Workbook
+     * @var WorkbookReader
      */
     private $workbook;
 
     private $worksheetIterator;
+
+    private $sheetNames = [];
+    private $sheetHeaders = [];
 
     public function __construct(SplFileInfo $file)
     {
         $this->file = $file;
         $this->settings = resolve(SpreadsheetSeederSettings::class);
 
-        if (!$this->shouldSkip()) $this->worksheetIterator = $this->getWorksheetIterator();
+        if (!$this->shouldSkip()) $this->load();
     }
 
     /**
@@ -59,7 +63,7 @@ class SourceFile implements \Iterator
         return false;
     }
 
-    public function getWorksheetIterator() {
+    public function load() {
         if (!isset($this->workbook)) {
             $filename = $this->file->getPathname();
             $this->fileType = IOFactory::identify($filename);
@@ -67,11 +71,26 @@ class SourceFile implements \Iterator
             if ($this->fileType == "Csv" && !empty($this->settings->delimiter)) {
                 $this->reader->setDelimiter($this->settings->delimiter);
             }
-            $chunkFilter = new ChunkReadFilter();
-            $this->reader->setReadFilter($chunkFilter);
+            $this->reader->setReadFilter(new WorkbookReadFilter());
             $this->workbook = $this->reader->load($filename);
         }
+        $this->sheetNames = $this->workbook->getSheetNames();
+
         return $this->workbook->getWorksheetIterator();
+        // use $this->workbook->getSheetNames() instead of worksheet iterator?
+        // have to load with a header readfilter?
+        // then follow with $this->>workbook->getSheetByName()?
+        // or just do getAllSheets()? can't do this because have to set the read filter and load more chunks
+    }
+
+    private function loadHeaders()
+    {
+        $worksheet = $this->worksheetIterator->current();
+        if ($this->shouldSkipSheet($worksheet) ) {
+            $this->next();
+            $worksheet = $this->worksheetIterator->current();
+        }
+
     }
 
     /**
