@@ -130,7 +130,8 @@ class SourceSheet implements \Iterator
 
         if ($this->loadedChunk == $startRow) return;
 
-        unset($this->workbook);
+        if (isset($this->worksheet)) $this->worksheet->disconnectCells();
+//        unset($this->workbook);
         unset($this->worksheet);
         $this->readFilter->setRows($startRow, $chunkSize);
         $this->workbook = $this->reader->load($this->fileName);
@@ -182,7 +183,7 @@ class SourceSheet implements \Iterator
     public function current()
     {
         $this->loadChunk();
-        return new SourceChunk($this->worksheet, $this->header);
+        return new SourceChunk($this->worksheet, $this->header, $this->chunkStartRow);
     }
 
     /**

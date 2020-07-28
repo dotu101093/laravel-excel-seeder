@@ -124,13 +124,12 @@ class SpreadsheetSeederMediator
                 $this->processRows();
                 $this->insertRows();
                 $this->writeTextOutputTableRows();
-                unset($this->sourceChunk);
-                gc_collect_cycles();
+//                unset($this->sourceChunk);
             }
             $this->writeTextOutputFooter();
             $this->outputResults();
-            unset($this->sourceSheet);
-            unset($this->seedTable);
+//            unset($this->sourceSheet);
+//            unset($this->seedTable);
         }
     }
 

@@ -36,7 +36,7 @@ class SourceChunk implements \Iterator
     /**
      * @var int
      */
-    private $rowOffset;
+    private $startRow;
 
     /**
      * @var SourceHeader
@@ -46,12 +46,13 @@ class SourceChunk implements \Iterator
     /**
      * SourceSheet constructor.
      */
-    public function __construct(Worksheet $worksheet, SourceHeader $header)
+    public function __construct(Worksheet $worksheet, SourceHeader $header, $startRow)
     {
         $this->worksheet = $worksheet;
         $this->settings = resolve(SpreadsheetSeederSettings::class);
         $this->tableName = $this->settings->tablename;
-        $this->rowIterator = $this->worksheet->getRowIterator();
+        $this->startRow = $startRow;
+        $this->rowIterator = $this->worksheet->getRowIterator($this->startRow);
         $this->header = $header;
     }
 
@@ -92,20 +93,7 @@ class SourceChunk implements \Iterator
      */
     public function rewind()
     {
-        $this->rowIterator->rewind();
-        // $this->key() is 1-based
-//        while ($this->key() <= $this->rowOffset) $this->rowIterator->next();
+        $this->rowIterator = $this->worksheet->getRowIterator($this->startRow);
     }
 
-//    public function getTitle() {
-//        return $this->worksheet->getTitle();
-//    }
-//
-//    public function isUnnamed() {
-//        return $this->isCsv() || preg_match('/^Sheet[0-9]+$/', $this->getTitle());
-//    }
-//
-//    public function titleIsTable() {
-//        return DestinationTable::tableExists($this->getTitle());
-//    }
 }
