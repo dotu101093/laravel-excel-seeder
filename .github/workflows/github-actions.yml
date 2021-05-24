@@ -12,11 +12,9 @@ jobs:
     steps:
       # git clone + use PHP + composer install
       - uses: actions/checkout@v2
-      - uses: shivammathur/setup-php@v2
+      - uses: php-actions/composer@v5
         with:
-          php-version: 8.0
-
-      - uses: "ramsey/composer-install@v1"
+          php_extensions: zip gd intl pcntl sodium
 
       # to see the output
       - run: vendor/bin/easy-ci php-versions-json
