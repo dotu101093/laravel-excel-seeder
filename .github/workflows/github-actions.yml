@@ -52,6 +52,7 @@ jobs:
           php_extensions: zip gd intl pcntl sodium
           command: update --with laravel/framework:${{ matrix.laravel }}
 #      - run: /usr/bin/env php vendor/phpunit/phpunit/phpunit --no-configuration tests
+      - run: bash -c "whoami;ls -l vendor;chmod -R +w vendor"
       - run: vendor/bin/phpunit tests --cache-result-file=.phpunit.result.cache
 
       # TODO PHPUnit test version depends on php version.  Can it be run with -run command instead of phpunit action?
