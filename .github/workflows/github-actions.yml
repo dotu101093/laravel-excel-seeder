@@ -14,7 +14,7 @@ jobs:
 
       - uses: php-actions/composer@v5
         with:
-          php_extensions: gd json pdo intl mbstring openssl
+          php_extensions: json mbstring fileinfo zip ctype dom gd iconv libxml simplexml xml xmlreader xmlwriter zlib pcre tokenizer filter pcntl pdo curl intl openssl phar
 
       - name: PHPUnit tests
         uses: php-actions/phpunit@v2
