@@ -54,5 +54,4 @@ jobs:
           dependency-versions: "highest"
           composer-options: "--with laravel/framework:${{ matrix.laravel }}"
 
-      - run: bash -c "whoami;ls -l vendor;chmod -R +w vendor"
       - run: vendor/bin/phpunit tests --cache-result-file=.phpunit.result.cache
