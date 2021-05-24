@@ -14,7 +14,8 @@ jobs:
 
       - uses: php-actions/composer@v5
         with:
-          php_extensions: gd pcntl intl
+          php_extensions: gd intl pcntl sodium
+          progress: yes
 
       - name: PHPUnit tests
         uses: php-actions/phpunit@v2
