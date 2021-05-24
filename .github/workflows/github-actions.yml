@@ -19,6 +19,7 @@ jobs:
       - name: PHPUnit tests
         uses: php-actions/phpunit@v2
         with:
+          php_extensions: zip gd intl pcntl sodium
           bootstrap: vendor/autoload.php
           args: --no-configuration tests
 
