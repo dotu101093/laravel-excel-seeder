@@ -36,8 +36,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # php: ${{ fromJson(needs.provide_php_versions_json.outputs.matrix) }}
-        php: [7.4]
+        php: ${{ fromJson(needs.provide_php_versions_json.outputs.matrix) }}
+#        php: [7.4]
         laravel: [^7.0]
         exclude:
           - php: 7.2
