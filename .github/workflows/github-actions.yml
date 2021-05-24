@@ -20,6 +20,7 @@ jobs:
         uses: php-actions/phpunit@v2
         with:
           php_extensions: zip gd intl pcntl sodium
+          memory_limit: 2G
           bootstrap: vendor/autoload.php
           args: --no-configuration tests
 
