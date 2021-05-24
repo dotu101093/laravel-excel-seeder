@@ -6,7 +6,36 @@ on:
       - github-actions
 
 jobs:
-  build-test:
+  provide_php_versions_json:
+    runs-on: ubuntu-latest
+
+    steps:
+      # git clone + use PHP + composer install
+      - uses: actions/checkout@v2
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.0
+
+      - uses: "ramsey/composer-install@v1"
+
+      # to see the output
+      - run: vendor/bin/easy-ci php-versions-json
+
+      # here we create the json, we need the "id:" so we can use it in "outputs" bellow
+      - id: output_data
+        run: echo "::set-output name=matrix::$(vendor/bin/easy-ci php-versions-json)"
+
+      # here, we save the result of this 1st phase to the "outputs"
+      outputs:
+        matrix: ${{ steps.output_data.outputs.matrix }}
+
+  build-and-test:
+    needs: provide_php_versions_json
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ${{ fromJson(needs.provide_php_versions_json.outputs.matrix) }}
+
     runs-on: ubuntu-latest
 
     steps:
