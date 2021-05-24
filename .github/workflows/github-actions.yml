@@ -12,9 +12,6 @@ jobs:
     steps:
       # git clone + use PHP + composer install
       - uses: actions/checkout@v2
-#      - uses: php-actions/composer@v5
-#        with:
-#          php_extensions: zip gd intl pcntl sodium
       - uses: shivammathur/setup-php@v2
         with:
           php-version: 8.0
@@ -37,8 +34,7 @@ jobs:
       fail-fast: false
       matrix:
         php: ${{ fromJson(needs.provide_php_versions_json.outputs.matrix) }}
-#        php: [7.4]
-        laravel: [^7.0]
+        laravel: [^5.8, ^6.0, ^7.0, ^8.0]
         exclude:
           - php: 7.2
             laravel: ^8.0
@@ -60,24 +56,3 @@ jobs:
 
       - run: bash -c "whoami;ls -l vendor;chmod -R +w vendor"
       - run: vendor/bin/phpunit tests --cache-result-file=.phpunit.result.cache
-
-#      - uses: php-actions/composer@v5
-#        with:
-#          php_version: ${{ matrix.php }}
-#          php_extensions: zip gd intl pcntl sodium
-#          command: update --with laravel/framework:${{ matrix.laravel }}
-##      - run: /usr/bin/env php vendor/phpunit/phpunit/phpunit --no-configuration tests
-#      - run: bash -c "whoami;ls -l vendor;chmod -R +w vendor"
-#      - run: vendor/bin/phpunit tests --cache-result-file=.phpunit.result.cache
-
-      # TODO PHPUnit test version depends on php version.  Can it be run with -run command instead of phpunit action?
-#      - name: PHPUnit tests
-#        uses: php-actions/phpunit@v2
-#        with:
-#          php_version: ${{ matrix.php }}
-#          php_extensions: zip gd intl pcntl sodium
-#          memory_limit: 2G
-#          bootstrap: vendor/autoload.php
-#          args: --no-configuration tests
-
-      
