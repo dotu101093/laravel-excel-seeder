@@ -45,7 +45,7 @@ jobs:
       - uses: php-actions/composer@v5
         with:
           php_extensions: zip gd intl pcntl sodium
-          command: update "laravel/framework:${{ matrix.laravel }}"
+          command: update --with laravel/framework:${{ matrix.laravel }}
 
       - name: PHPUnit tests
         uses: php-actions/phpunit@v2
