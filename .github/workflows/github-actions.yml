@@ -42,12 +42,14 @@ jobs:
 
       - uses: php-actions/composer@v5
         with:
+          php_version: ${{ matrix.php }}
           php_extensions: zip gd intl pcntl sodium
           command: update --with laravel/framework:${{ matrix.laravel }}
 
       - name: PHPUnit tests
         uses: php-actions/phpunit@v2
         with:
+          php_version: ${{ matrix.php }}
           php_extensions: zip gd intl pcntl sodium
           memory_limit: 2G
           bootstrap: vendor/autoload.php
