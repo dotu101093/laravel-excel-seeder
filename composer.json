@@ -65,8 +65,7 @@
 	],
 	"require": {
 		"php": ">=7.1.3",
-		"bfinlay/laravel-excel-seeder-dbal-requirements": "*",
-		"doctrine/dbal": "*",
+		"doctrine/dbal": "^2.6|^3.0",
 		"laravel/framework": "^5.8|^6.0|^7.0|^8.0",
 		"phpoffice/phpspreadsheet": "~1.7"
 	},
