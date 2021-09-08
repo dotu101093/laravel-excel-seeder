@@ -41,16 +41,19 @@ jobs:
       matrix:
         php: ${{ fromJson(needs.provide_php_versions_json.outputs.matrix) }}
         laravel: [^5.8, ^6.0, ^7.0, ^8.0]
-        dbal: [^2.6]
+        dbal: [^2.6, ^3.0]
         exclude:
           - php: 7.2
             laravel: ^8.0
           - php: 8.0
             laravel: ^5.8
-        include:
-          - laravel: ^8.0
-            dbal: [^2.6, ^3.0]
-
+          - laravel: ^5.8
+            dbal: ^3.0
+          - laravel: ^6.0
+            dbal: ^3.0
+          - laravel: ^7.0
+            dbal: ^3.0
+            
     runs-on: ubuntu-latest
 
     steps:
