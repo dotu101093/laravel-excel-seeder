@@ -942,6 +942,8 @@ This can be used after seeding to further process tables - for example to reset 
 Laravel Excel Seeder is open-sourced software licensed under the MIT license.
 
 ## Changes
+#### 2.3.2
+- update composer.json to add support for `doctrine\dbal` 3.x
 #### 2.3.1
 - fix bug #10 (contributed by @tezu35)
 - add date time test cases pertaining to #10
