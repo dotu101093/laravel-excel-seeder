@@ -1,4 +1,5 @@
 # Excel Seeder for Laravel
+[![PHPUnit tests](https://github.com/bfinlay/laravel-excel-seeder/actions/workflows/github-actions.yml/badge.svg?branch=master)](https://github.com/bfinlay/laravel-excel-seeder/actions/workflows/github-actions.yml)
 > #### Seed your database using CSV files, XLSX files, and more with Laravel
 
 With this package you can save time seeding your database. Instead of typing out seeder files, you can use CSV, XLSX, or any supported spreadsheet file format to load your project's database. There are configuration options available to control the insertion of data from your spreadsheet files.
@@ -23,8 +24,9 @@ This project was forked from [laravel-csv-seeder](https://github.com/jeroenzwart
 This package has been used on CSV files with 5 million rows per file while maintaining flat memory usage (no memory leaks).
 
 ### Testing
-This package has PHPUnit tests.  Tests are added as enhancements are made or as bugs are found and fixed.
+This package has PHPUnit tests run automatically by Github Actions.  Tests are added as enhancements are made or as bugs are found and fixed.
 
+[![PHPUnit tests](https://github.com/bfinlay/laravel-excel-seeder/actions/workflows/github-actions.yml/badge.svg?branch=master)](https://github.com/bfinlay/laravel-excel-seeder/actions/workflows/github-actions.yml)  
 This package is tested against the following Laravel versions
 * Laravel 5.8
 * Laravel 6.x
@@ -940,6 +942,13 @@ This can be used after seeding to further process tables - for example to reset 
 Laravel Excel Seeder is open-sourced software licensed under the MIT license.
 
 ## Changes
+#### 2.3.2
+- update composer.json to add support for `doctrine\dbal` 3.x
+#### 2.3.1
+- fix bug #10 (contributed by @tezu35)
+- add date time test cases pertaining to #10
+- refactor code base to decouple header and row import transformers from spreadsheet reader
+- implement github actions for automated testing of all supported php and laravel framework versions
 #### 2.3.0
 - refactor code base to decouple readers and writers and eliminate mediator
 - add ability to set $this->file to an instance of Symfony Finder
